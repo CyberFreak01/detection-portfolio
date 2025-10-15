@@ -16,7 +16,7 @@ This repository contains my **architecture**, **Sysmon configuration**, **Elasti
 
 ## 🏗️ Lab Architecture
 
-![Architecture Diagram](architecture/cloud-architecture.png)
+<img width="1024" height="1024" alt="architecture" src="https://github.com/user-attachments/assets/320b5e6a-eae4-4b84-8a88-6a3bdbccbc95" />
 
 | Layer | Platform | Purpose |
 |-------|-----------|----------|
