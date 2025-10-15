@@ -1,0 +1,4 @@
+event.code: "1"
+AND winlog.channel: "Microsoft-Windows-Sysmon/Operational"
+AND process.name: "reg.exe"
+AND process.command_line: (*add* AND *CurrentVersion\\Run* AND */d*)

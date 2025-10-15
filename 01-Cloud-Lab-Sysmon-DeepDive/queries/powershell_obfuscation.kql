@@ -1,0 +1,5 @@
+event.code: "1"
+AND winlog.channel: "Microsoft-Windows-Sysmon/Operational"
+AND process.name: "powershell.exe"
+AND process.parent.name: "powershell.exe"
+AND process.command_line: (*-EncodedCommand* OR *-enc* OR *-e*)

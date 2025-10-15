@@ -1,0 +1,3 @@
+event.action: "log_on" 
+AND event.outcome: "failure" 
+AND event.code: "4625"
