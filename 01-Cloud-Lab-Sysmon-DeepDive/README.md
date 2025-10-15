@@ -65,3 +65,95 @@ Detects brute-force or repeated failed login attempts.
 event.action: "log_on" 
 AND event.outcome: "failure" 
 AND event.code: "4625"
+```
+Why: Event ID 4625 indicates failed logon attempts — early brute-force or credential spraying activity.
+
+### ⚡ **2. PowerShell Process Chain with Obfuscation**
+Detects brute-force or repeated failed login attempts.
+
+**Query:**
+```kql
+event.code: "1"
+AND winlog.channel: "Microsoft-Windows-Sysmon/Operational"
+AND process.name: "powershell.exe"
+AND process.parent.name: "powershell.exe"
+AND process.command_line: (*-EncodedCommand* OR *-enc* OR *-e*)
+```
+
+Why:
+Flags encoded or obfuscated PowerShell commands often used in malware, payload delivery, or lateral movement.
+
+### 🧱 **3. Reg.exe Used for Persistence**
+
+Detects attempts to create persistence through Registry “Run” keys.
+
+**Query:**
+```kql
+event.code: "1"
+AND winlog.channel: "Microsoft-Windows-Sysmon/Operational"
+AND process.name: "reg.exe"
+AND process.command_line: (*add* AND *CurrentVersion\\Run* AND */d*)
+```
+Why:
+Run keys allow programs to execute automatically at startup — often abused for persistence.
+
+# 📊 Alerting & Dashboard
+
+Each detection has been converted into Elastic alerts and visualized on a centralized **Detection Dashboard**.
+
+📁 **detections/detection-alerts.ndjson**
+
+🖼️ *(Dashboard screenshots or visualizations can be added here)*
+
+---
+
+## 🧩 Key Learnings
+
+- **Telemetry depth depends on configuration**  
+  → *Sysmon without a config = visibility loss.*
+
+- **KQL + process relationships** form the foundation of host-based detection logic.
+
+- **Cross-data correlation** (Sysmon + Snort/Zeek) transforms raw logs into meaningful intelligence.
+
+- **Elastic SIEM** is a fantastic platform for learning detection development.
+
+---
+
+## 🛠️ Tools & Tech Stack
+
+| Category          | Tool(s)                                      |
+|-------------------|-----------------------------------------------|
+| **Cloud**         | Microsoft Azure, Google Cloud Platform       |
+| **SIEM**          | Elastic Stack (Elasticsearch + Kibana)       |
+| **Telemetry**     | Sysmon, Winlogbeat, Filebeat                 |
+| **Detection Writing** | KQL (Kibana Query Language)             |
+
+---
+
+## 📚 Articles & Write-Ups
+
+- [Part 1: Why I Built a Detection Lab](#)  
+- [Part 2: Cloud-Based Detection Engineering Lab (this repo)](#)  
+- [Part 3: Network Detection with Snort & Zeek (Coming Soon)](#)  
+
+---
+
+## 🧾 License
+
+**MIT License** – free to use, modify, and share with proper attribution.  
+If you build on this lab, please give credit — collaboration makes the blue team stronger 💪
+
+---
+
+## 👨‍💻 Author
+
+**Sujal Chauhan**  
+📍 Detection Engineer | Threat Hunter | SOC Enthusiast
+
+- 🔗 [LinkedIn](#)
+- 📰 [Medium Blog](#)
+- 🐦 [Twitter / X](#)
+- 📧 sujal@example.com *(optional)*
+
+> “Detection Engineering isn’t about chasing alerts — it’s about understanding the story behind them.”
