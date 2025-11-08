@@ -1,0 +1,2 @@
+event.dataset: "zeek.http" 
+AND user_agent.original: *Nikto*

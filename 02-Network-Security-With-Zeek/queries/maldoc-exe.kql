@@ -1,0 +1,2 @@
+event.dataset: "zeek.files" 
+AND file.mime_type: "application/x-dosexec"
