@@ -1,0 +1,14 @@
+event.dataset:"windows.sysmon_operational" 
+AND event.action:"Image loaded"
+AND NOT file.code_signature.status:"Valid"
+AND NOT file.directory:(
+  "C:\\Windows\\*"
+  OR "C:\\Program Files*"
+)
+AND NOT process.executable:(
+  "C:\\Windows\\*"
+  OR "C:\\Program Files*"
+)
+AND NOT file.name:(
+  "*.ni.dll"
+)

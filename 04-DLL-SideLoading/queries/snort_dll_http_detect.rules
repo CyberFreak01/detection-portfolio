@@ -1,0 +1,12 @@
+alert tcp any any -> $HOME_NET 80 (
+    msg:"LAB - HTTP GET for .dll download"; 
+    sid:1100001; 
+    rev:1; 
+    flow:to_server,established; 
+    http_method; 
+    content:".dll"; 
+    http_uri; 
+    nocase; 
+    classtype:policy-violation; 
+    priority:2;
+)
