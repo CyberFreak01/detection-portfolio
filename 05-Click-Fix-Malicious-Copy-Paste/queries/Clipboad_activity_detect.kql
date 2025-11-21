@@ -1,0 +1,5 @@
+event.dataset:"windows.sysmon_operational"
+AND event.code:"24"
+AND clipboard.text:*mshta.exe*
+AND clipboard.text:(*"http*" OR *".hta"*)
+AND NOT process.executable:"C:\\Windows\\System32\\mshta.exe"

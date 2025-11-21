@@ -1,0 +1,13 @@
+sequence by host.name, user.name with maxspan=30s
+  [registry where
+       event.dataset == "windows.sysmon_operational" and
+       event.code == "13" and
+       registry.path : "*\\Explorer\\RunMRU\\*" and
+       not registry.path : "*\\MRUList"
+  ]
+  [process where
+       event.dataset == "windows.sysmon_operational" and
+       process.name == "mshta.exe" and
+       (process.command_line : "*http*" or
+        process.command_line : "*.hta*")
+  ]

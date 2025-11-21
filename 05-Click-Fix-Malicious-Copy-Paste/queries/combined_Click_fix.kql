@@ -1,0 +1,12 @@
+(event.dataset:"windows.sysmon_operational"
+ AND event.code:13
+ AND registry.path:*\\Explorer\\RunMRU\\*
+ AND registry.value:(*"mshta"* OR *".hta"* OR *"http"*)
+)
+OR
+(event.dataset:"windows.sysmon_operational"
+ AND event.code:1
+ AND process.name:"mshta.exe"
+ AND process.command_line:(*"http"* OR *".hta"*)
+ AND @timestamp >= now-2m
+)

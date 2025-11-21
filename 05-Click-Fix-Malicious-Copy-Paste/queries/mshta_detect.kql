@@ -1,0 +1,3 @@
+event.dataset:"windows.sysmon_operational" AND
+process.name:"mshta.exe" AND
+process.command_line:(*http* OR *hta*)

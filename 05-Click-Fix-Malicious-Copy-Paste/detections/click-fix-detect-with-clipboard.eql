@@ -1,0 +1,23 @@
+sequence by host.name with maxspan=30s
+  // Step 1: Clipboard contains mshta command
+  [ clipboard where 
+        event.dataset == "windows.sysmon_operational" and 
+        event.code == "24" and 
+        clipboard.text : "*mshta.exe*" and 
+        clipboard.text : ("*.hta" or "http*")
+  ]
+
+  // Step 2: RunMRU registry modified
+  [ registry where 
+        event.dataset == "windows.sysmon_operational" and 
+        event.code == "13" and 
+        registry.path : "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\RunMRU\\*" and
+        registry.value : ("*mshta.exe*" or "*.hta*" or "http*")
+  ]
+
+  // Step 3: mshta executing remote HTA
+  [ process where 
+        event.dataset == "windows.sysmon_operational" and 
+        process.name == "mshta.exe" and
+        process.command_line : ("*.hta*" or "http*")
+  ]

@@ -1,0 +1,5 @@
+event.dataset: "windows.sysmon_operational" AND
+event.code: "13" AND
+registry.path: *\\RunMRU\\* AND
+NOT registry.path: *\\MRUList 
+| table @timestamp, host.name, user.name, winlog.event_data.Details

