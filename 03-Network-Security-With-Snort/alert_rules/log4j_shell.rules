@@ -1,0 +1,8 @@
+alert tcp any any -> $HOME_NET $HTTP_PORTS (
+    msg:"ADV Log4Shell JNDI Exploit Attempt";
+    flow:to_server,established;
+    content:"${jndi:"; nocase;
+    pcre:"/\$\{jndi:(ldap|ldaps|rmi|dns):\/\//i";
+    classtype:web-application-attack;
+    sid:1000103; rev:1;
+)

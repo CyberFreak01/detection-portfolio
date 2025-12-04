@@ -1,0 +1,7 @@
+alert tcp any any -> $HOME_NET $HTTP_PORTS (
+    msg:"ADV Curl Automation Recon";
+    flow:to_server,established;
+    content:"User-Agent|3a| curl"; nocase;
+    classtype:attempted-recon;
+    sid:1000108; rev:1;
+)

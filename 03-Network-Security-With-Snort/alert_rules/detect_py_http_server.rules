@@ -1,0 +1,7 @@
+alert tcp any any -> $HOME_NET 8000 (
+    msg:"ADV Python SimpleHTTPServer Probe";
+    flow:to_server,established;
+    content:"User-Agent|3a| Python"; nocase;
+    classtype:network-scan;
+    sid:1000107; rev:1;
+)

@@ -1,0 +1,8 @@
+alert tcp $HOME_NET any -> $EXTERNAL_NET any (
+    msg:"ADV PowerShell Encoded Command Execution";
+    flow:to_server,established;
+    content:"powershell"; nocase;
+    content:"-enc"; nocase;
+    classtype:trojan-activity;
+    sid:1000102; rev:1;
+)

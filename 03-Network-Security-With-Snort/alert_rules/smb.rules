@@ -1,0 +1,8 @@
+alert tcp any any -> $HOME_NET 445 (
+    msg:"ADV SMB Suspicious MS17-010 EternalBlue Pattern";
+    flow:to_server,established;
+    content:"|FF 53 4D 42|"; offset:0; depth:4;
+    content:"|00 00 00 00 00 18 53 C8|"; distance:20; within:8;
+    classtype:attempted-admin;
+    sid:1000104; rev:1;
+)

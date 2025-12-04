@@ -1,0 +1,7 @@
+alert udp $HOME_NET any -> $EXTERNAL_NET 53 (
+    msg:"ADV DNS Tunneling Suspected – Long TXT Query";
+    content:"|00 10|"; offset:2; depth:2;   # Type = TXT
+    dsize:>200;
+    classtype:bad-unknown;
+    sid:1000109; rev:1;
+)

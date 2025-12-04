@@ -1,0 +1,6 @@
+alert icmp any any -> $HOME_NET any (
+    msg:"ADV ICMP Covert Channel — Suspicious Payload Size";
+    dsize:>800;
+    classtype:data-theft;
+    sid:1000110; rev:1;
+)

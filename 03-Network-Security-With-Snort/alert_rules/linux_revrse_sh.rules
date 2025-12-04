@@ -1,0 +1,8 @@
+alert tcp any any -> $HOME_NET $HTTP_PORTS (
+    msg:"ADV Reverse Shell Attempt – /bin/bash in URI";
+    flow:to_server,established;
+    http_uri;
+    content:"/bin/bash"; nocase;
+    classtype:attempted-user;
+    sid:1000105; rev:1;
+)
