@@ -1,0 +1,46 @@
+title: LSASS Memory Dump via ProcDump or Similar Tools
+id: 9bd012ee-0db6-4c7f-8a55-99f03e0a3e42
+status: test
+description: Detects attempts to dump LSASS process memory using common tools like ProcDump (Sysinternals), Process explorer
+references:
+    - https://attack.mitre.org/techniques/T1003/001/
+    - https://www.microsoft.com/security/blog/2022/10/05/detecting-and-preventing-lsass-credential-dumping-attacks/
+author: Sujal Chauhan
+date: 2025-12-07
+modified: 2025-12-07
+tags:
+    - attack.credential_access
+    - attack.t1003.001
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_tools:
+        Image|endswith:
+            - '\procdump.exe'
+            - '\procdump64.exe'
+            - '\taskmgr.exe'
+            - '\procexp.exe'
+            - '\procexp64.exe'
+            - '\processhacker.exe'
+    selection_lsass:
+        CommandLine|contains:
+            - 'lsass'
+            - 'lsass.exe'
+    selection_dump_params:
+        CommandLine|contains:
+            - ' -ma '
+            - ' -mm '
+            - ' -mp '
+            - ' -accepteula'
+            - '.dmp'
+    condition: selection_tools and (selection_lsass or selection_dump_params)
+falsepositives:
+    - Legitimate troubleshooting by administrators (rare)
+    - Security tools performing memory analysis
+level: high
+fields:
+    - CommandLine
+    - User
+    - IntegrityLevel
+    - ParentImage

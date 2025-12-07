@@ -1,0 +1,57 @@
+title: PowerShell Execution with Obfuscated Command Parameters
+id: 10598928-44a9-4730-b79f-69b62fe73666
+status: test
+description: Detects PowerShell execution using obfuscated or abbreviated command-line parameters.
+references:
+    - https://attack.mitre.org/techniques/T1059/001/
+    - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.001/T1059.001.md
+    - https://www.mandiant.com/resources/blog/obfuscation-techniques-powershell
+author: Sujal Chauhan
+date: 2025-12-07
+modified: 2025-12-07
+tags:
+    - attack.execution
+    - attack.defense_evasion
+    - attack.t1059.001
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_image:
+        - Image|endswith:
+            - '\powershell.exe'
+            - '\pwsh.exe'
+        - OriginalFileName:
+            - 'PowerShell.EXE'
+            - 'pwsh.dll'
+    
+    # Detect abbreviated -Command parameter variations
+    selection_command_abbrev:
+        CommandLine|contains:
+            - ' -C '      # Most common abbreviation
+            - ' /C '      # Alternative slash syntax
+            - ' -Co '
+            - ' -Com '
+            - ' -Comm '
+            - ' -Comma '
+            - ' -Comman '
+    
+    # Detect -NoProfile parameter (often used with malicious scripts)
+    selection_noprofile:
+        CommandLine|contains:
+            - '-NoP'
+            - '-NoProfile'
+            - '-Nop '
+    
+    # Detect obfuscated/base64-like strings in command line
+    selection_obfuscation:
+        CommandLine|re: '.*[a-zA-Z0-9]{20,}.*'  # Long alphanumeric strings (20+ chars)
+    
+    condition: selection_image and selection_command_abbrev and (selection_noprofile or selection_obfuscation)
+    
+falsepositives:
+    - Legitimate administrative scripts using abbreviated parameters
+    - Monitoring agents that use PowerShell for data collection
+    - Software deployment scripts (SCCM, Intune)
+    
+level: medium
