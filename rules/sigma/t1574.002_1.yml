@@ -1,0 +1,56 @@
+title: DLL Side-Loading - Suspicious DLL Load Location
+id: 7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d
+status: test
+description: Detects DLL loading from suspicious locations indicative of DLL side-loading
+references:
+    - https://attack.mitre.org/techniques/T1574/002/
+author: Sujal Chauhan
+date: 2025-12-07
+modified: 2025-12-07
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.defense_evasion
+    - attack.t1574.002
+logsource:
+    category: image_load
+    product: windows
+detection:
+    selection_process:
+        Image|endswith:
+            - '\notepad++.exe'
+            - '\chrome.exe'
+            - '\firefox.exe'
+            - '\explorer.exe'
+            - '\vmware.exe'
+            - '\winword.exe'
+            - '\excel.exe'
+    selection_dll_location:
+        ImageLoaded|contains:
+            - '\Users\'
+            - '\AppData\'
+            - '\Temp\'
+            - '\Public\'
+            - '\ProgramData\'
+            - '\Desktop\'
+            - '\Downloads\'
+    selection_dll_names:
+        ImageLoaded|endswith:
+            - '\uxtheme.dll'
+            - '\version.dll'
+            - '\dwmapi.dll'
+            - '\msvcr100.dll'
+            - '\msvcp140.dll'
+            - '\kernel32.dll'
+            - '\wininet.dll'
+    filter_legitimate:
+        ImageLoaded|startswith:
+            - 'C:\Windows\System32\'
+            - 'C:\Windows\SysWOW64\'
+            - 'C:\Program Files\'
+            - 'C:\Program Files (x86)\'
+    condition: selection_process and selection_dll_location and selection_dll_names and not filter_legitimate
+falsepositives:
+    - Legitimate portable applications
+    - Development environments
+level: high

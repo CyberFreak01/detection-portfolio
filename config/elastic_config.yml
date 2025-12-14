@@ -1,0 +1,18 @@
+environments:
+  test:
+    url: "https://your-elastic-test.cloud.es.io:9243"
+    api_key: "${ELASTIC_TEST_API_KEY}"
+    index: "logs-endpoint.events.process-*"
+  
+  prod:
+    url: "https://your-elastic-prod.cloud.es.io:9243"
+    api_key: "${ELASTIC_PROD_API_KEY}"
+    index: "logs-endpoint.events.process-*"
+
+# Detection rule defaults
+rule_defaults:
+  enabled: true
+  risk_score: 47
+  severity: "medium"
+  interval: "5m"
+  max_signals: 100

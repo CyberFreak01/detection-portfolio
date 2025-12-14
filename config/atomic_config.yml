@@ -1,0 +1,12 @@
+atomic_path: "./AtomicRedTeam"
+executor: "powershell"  # or "bash" for Linux
+timeout: 300  # seconds
+cleanup: true
+
+# Mapping of techniques to Atomic test numbers
+technique_mapping:
+  t1003.001:
+    - 1
+    - 2
+  t1055.012:
+    - 1

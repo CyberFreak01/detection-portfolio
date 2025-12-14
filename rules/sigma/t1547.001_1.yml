@@ -1,0 +1,48 @@
+title: Persistence via Registry Run Key
+id: 2f3a4b5c-6d7e-8f9a-0b1c-2d3e4f5a6b7c
+status: test
+description: Detects creation or modification of Registry Run keys for persistence. These keys execute programs at user logon or system startup.
+references:
+    - https://attack.mitre.org/techniques/T1547/001/
+author: Sujal Chauhan
+date: 2025-12-07
+modified: 2025-12-07
+tags:
+    - attack.persistence
+    - attack.privilege_escalation
+    - attack.t1547.001
+logsource:
+    category: registry_set
+    product: windows
+detection:
+    selection:
+        TargetObject|contains:
+            - '\Software\Microsoft\Windows\CurrentVersion\Run\'
+            - '\Software\Microsoft\Windows\CurrentVersion\RunOnce\'
+            - '\Software\Microsoft\Windows\CurrentVersion\RunOnceEx\'
+            - '\Software\Microsoft\Windows\CurrentVersion\RunServices\'
+            - '\Software\Microsoft\Windows\CurrentVersion\RunServicesOnce\'
+    filter_legitimate:
+        Details|startswith:
+            - 'C:\Program Files\'
+            - 'C:\Program Files (x86)\'
+            - 'C:\Windows\System32\'
+        Image|endswith:
+            - '\msiexec.exe'
+            - '\regsvr32.exe'
+    filter_known_software:
+        TargetObject|contains:
+            - '\Microsoft\OneDrive'
+            - '\Google\Chrome'
+            - '\Adobe'
+    condition: selection and not 1 of filter_*
+falsepositives:
+    - Legitimate software installations
+    - System updates
+    - Endpoint management tools
+level: medium
+fields:
+    - TargetObject
+    - Details
+    - User
+    - Image

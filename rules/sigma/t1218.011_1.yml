@@ -1,0 +1,43 @@
+title: Rundll32 JavaScript or VBScript Protocol Handler Abuse
+id: 2f314b5e-876b-4d7a-a4b3-9f8c3e9d4f2a
+status: test
+description: Detects rundll32.exe executing JavaScript or VBScript code via protocol handlers.
+    This is a well-known technique to bypass application whitelisting and execute arbitrary code.
+    Technique variations:
+    javascript:"\..\mshtml,RunHTMLApplication"
+    vbscript:"\..\mshtml,RunHTMLApplication"
+    about:<script> tags
+
+references:
+    - https://attack.mitre.org/techniques/T1218/011/
+    - https://lolbas-project.github.io/lolbas/Binaries/Rundll32/
+    - https://www.fireeye.com/blog/threat-research/2017/03/apt29_domain_frontin.html
+author: Sujal Chauhan
+date: 2025-12-07
+modified: 2025-12-07
+tags:
+    - attack.defense_evasion
+    - attack.execution
+    - attack.t1218.011
+logsource:
+    category: process_creation
+    product: windows
+detection:
+    selection_image:
+        - Image|endswith: '\rundll32.exe'
+        - OriginalFileName: 'RUNDLL32.EXE'
+    
+    selection_javascript:
+        CommandLine|contains:
+            - 'javascript:'
+            - 'vbscript:'
+            - 'about:'
+            - '..\mshtml'
+            - 'RunHTMLApplication'
+    
+    condition: all of selection_*
+    
+falsepositives:
+    - None expected - this is almost exclusively malicious
+    
+level: critical
