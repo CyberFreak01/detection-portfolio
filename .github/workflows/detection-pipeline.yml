@@ -1,0 +1,138 @@
+name: Detection-as-Code Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'rules/sigma/**'
+      - 'scripts/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'rules/sigma/**'
+
+env:
+  PYTHON_VERSION: '3.10'
+
+jobs:
+  validate:
+    name: Validate Sigma Rules
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ci_requirements.txt
+          pip install sigma-cli pysigma-backend-elasticsearch pysigma-pipeline-sysmon
+      
+      - name: Validate Sigma schema
+        run: python scripts/validate_schema.py
+      
+      - name: Validate with sigma-cli
+        run: python scripts/validate_sigma.py
+      
+      - name: Upload validation results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: validation-logs
+          path: |
+            *.log
+  
+  convert:
+    name: Convert Sigma to Elastic EQL
+    needs: validate
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install sigma-cli pysigma-backend-elasticsearch pysigma-pipeline-sysmon
+      
+      - name: Convert Sigma rules to EQL
+        run: python scripts/convert_sigma.py
+      
+      - name: Upload converted rules
+        uses: actions/upload-artifact@v4
+        with:
+          name: elastic-rules
+          path: rules-converted/elastic/
+  
+  test:
+    name: Test Detections
+    needs: convert
+    runs-on: windows-latest  # Use Windows for Atomic Red Team
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+      
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      
+      - name: Download converted rules
+        uses: actions/download-artifact@v4
+        with:
+          name: elastic-rules
+          path: rules-converted/elastic/
+      
+      - name: Install Atomic Red Team
+        shell: powershell
+        run: |
+          IEX (IWR 'https://raw.githubusercontent.com/redcanaryco/invoke-atomicredteam/master/install-atomicredteam.ps1' -UseBasicParsing);
+          Install-AtomicRedTeam -getAtomics -Force
+      
+      - name: Deploy rules to test environment
+        env:
+          ELASTIC_TEST_API_KEY: ${{ secrets.ELASTIC_TEST_API_KEY }}
+        run: python scripts/deploy_to_elastic.py --env test
+      
+      - name: Validate test data fields
+        run: python scripts/validate_fields.py
+      
+      - name: Execute Atomic Red Team tests
+        shell: powershell
+        run: python scripts/execute_atomic.py
+        timeout-minutes: 30
+      
+      - name: Verify detections
+        env:
+          ELASTIC_TEST_API_KEY: ${{ secrets.ELASTIC_TEST_API_KEY }}
+        run: python scripts/verify_detections.py
+      
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            *.log
+            execution.log
