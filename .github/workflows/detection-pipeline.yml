@@ -32,7 +32,7 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r requirements.txt
+          pip install -r ci_requirements.txt
           pip install sigma-cli pysigma-backend-elasticsearch pysigma-pipeline-sysmon
       
       - name: Validate Sigma schema
