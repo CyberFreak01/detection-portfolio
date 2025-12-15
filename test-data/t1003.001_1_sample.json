@@ -1,0 +1,22 @@
+{
+  "@timestamp": "2024-01-15T10:30:00.000Z",
+  "event": {
+    "action": "start",
+    "category": ["process"],
+    "type": ["start"]
+  },
+  "process": {
+    "name": "procdump.exe",
+    "executable": "C:\\Tools\\procdump.exe",
+    "command_line": "procdump.exe -ma lsass.exe lsass.dmp",
+    "parent": {
+      "name": "cmd.exe"
+    }
+  },
+  "user": {
+    "name": "administrator"
+  },
+  "host": {
+    "name": "WIN-DETECTION"
+  }
+}

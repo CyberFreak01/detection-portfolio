@@ -1,0 +1,17 @@
+{
+  "technique": "T1003.001",
+  "test_number": "1",
+  "description": "Required fields for detecting LSASS dump via ProcDump",
+  "required_fields": [
+    "process.executable",
+    "process.command_line",
+    "process.name",
+    "event.action",
+    "@timestamp"
+  ],
+  "optional_fields": [
+    "process.parent.name",
+    "user.name",
+    "host.name"
+  ]
+}
