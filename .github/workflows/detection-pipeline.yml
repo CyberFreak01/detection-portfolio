@@ -43,7 +43,7 @@ jobs:
       
       - name: Upload validation results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: validation-logs
           path: |
@@ -73,7 +73,7 @@ jobs:
         run: python scripts/convert_sigma.py
       
       - name: Upload converted rules
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: elastic-rules
           path: rules-converted/elastic/
@@ -99,7 +99,7 @@ jobs:
           pip install -r requirements.txt
       
       - name: Download converted rules
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: elastic-rules
           path: rules-converted/elastic/
@@ -130,7 +130,7 @@ jobs:
       
       - name: Upload test results
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: test-results
           path: |
