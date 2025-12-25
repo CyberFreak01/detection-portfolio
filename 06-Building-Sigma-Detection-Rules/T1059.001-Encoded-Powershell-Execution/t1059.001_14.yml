@@ -1,14 +1,13 @@
-title: PowerShell Execution with Obfuscated Command Parameters
+title: PowerShell - Command Parameter with Encoded Arguments
 id: 10598928-44a9-4730-b79f-69b62fe73666
 status: test
-description: Detects PowerShell execution using obfuscated or abbreviated command-line parameters.
+description: Detects PowerShell - execution using -Command parameter variations with encoded arguments
 references:
     - https://attack.mitre.org/techniques/T1059/001/
     - https://github.com/redcanaryco/atomic-red-team/blob/master/atomics/T1059.001/T1059.001.md
-    - https://www.mandiant.com/resources/blog/obfuscation-techniques-powershell
 author: Sujal Chauhan
 date: 2025-12-07
-modified: 2025-12-07
+modified: 2025-12-25
 tags:
     - attack.execution
     - attack.defense_evasion
@@ -18,36 +17,61 @@ logsource:
     product: windows
 detection:
     selection_image:
-        - Image|endswith:
+        Image|endswith:
             - '\powershell.exe'
             - '\pwsh.exe'
-        - OriginalFileName:
+    
+    selection_image_alt:
+        OriginalFileName:
             - 'PowerShell.EXE'
             - 'pwsh.dll'
     
-    # Detect abbreviated -Command parameter variations
-    selection_command_abbrev:
+    # Detect -NoProfile parameter
+    selection_noprofile:
         CommandLine|contains:
-            - ' -C '      # Most common abbreviation
-            - ' /C '      # Alternative slash syntax
+            - ' -NoP'
+            - ' /NoP'
+    
+    # Detect -Command parameter variations
+    selection_command:
+        CommandLine|contains:
+            - ' -C '
+            - ' /C '
             - ' -Co '
+            - ' /Co '
             - ' -Com '
+            - ' /Com '
             - ' -Comm '
             - ' -Comma '
             - ' -Comman '
     
-    # Detect -NoProfile parameter (often used with malicious scripts)
-    selection_noprofile:
+    # Detect -EncodedArguments parameter variations (this is key!)
+    selection_encoded_args:
         CommandLine|contains:
-            - '-NoP'
-            - '-NoProfile'
-            - '-Nop '
+            - ' -EA '
+            - ' /EA '
+            - ' -E '
+            - ' /E '
+            - ' -En '
+            - ' -Enc '
+            - ' -Enco '
+            - ' -Encod '
+            - ' -Encode '
+            - ' -Encoded '
+            - ' -EncodedA '
+            - ' -EncodedAr '
+            - ' -EncodedArg '
+            - ' -EncodedArgs '
+            - ' -EncodedArguments '
     
-    # Detect obfuscated/base64-like strings in command line
-    selection_obfuscation:
-        CommandLine|re: '.*[a-zA-Z0-9]{20,}.*'  # Long alphanumeric strings (20+ chars)
+    # Detect base64-like encoded content (50+ chars)
+    selection_base64:
+        CommandLine|re: '[A-Za-z0-9+/]{50,}={0,2}'
     
-    condition: selection_image and selection_command_abbrev and (selection_noprofile or selection_obfuscation)
+    condition: (selection_image or selection_image_alt) and 
+               selection_noprofile and 
+               (selection_command or selection_encoded_args) and 
+               selection_base64
     
 falsepositives:
     - Legitimate administrative scripts using abbreviated parameters
